@@ -24,8 +24,8 @@ import com.ritense.processlink.exception.ProcessLinkNotFoundException
 import com.ritense.processlink.service.ProcessLinkActivityService
 import com.ritense.valtimoplugins.publictask.domain.PublicTaskData
 import com.ritense.valtimoplugins.publictask.domain.PublicTaskEntity
-import com.ritense.valtimo_plugins.backend.plugin.htmlrenderer.service.service.HtmlRenderService
-import com.ritense.valtimo_plugins.publictask.repository.PublicTaskRepository
+import com.ritense.valtimoplugins.publictask.htmlrenderer.service.HtmlRenderService
+import com.ritense.valtimoplugins.publictask.repository.PublicTaskRepository
 import java.time.LocalDate
 import java.util.UUID
 import mu.KotlinLogging

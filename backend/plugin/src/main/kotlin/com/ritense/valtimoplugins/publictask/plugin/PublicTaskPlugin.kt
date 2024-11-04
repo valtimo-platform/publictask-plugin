@@ -21,7 +21,7 @@ import com.ritense.plugin.annotation.PluginAction
 import com.ritense.plugin.annotation.PluginActionProperty
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.valtimoplugins.publictask.domain.PublicTaskData
-import com.ritense.valtimo_plugins.publictask.service.PublicTaskService
+import com.ritense.valtimoplugins.publictask.service.PublicTaskService
 import java.util.UUID
 import org.camunda.bpm.engine.delegate.DelegateExecution
 

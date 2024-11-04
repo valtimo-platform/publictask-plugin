@@ -16,7 +16,7 @@
 
 package com.ritense.valtimoplugins.publictask.audit
 
-import com.ritense.valtimo_plugins.publictask.repository.PublicTaskRepository
+import com.ritense.valtimoplugins.publictask.repository.PublicTaskRepository
 import com.ritense.valtimo.camunda.TaskCompletedListener
 import com.ritense.valtimo.contract.audit.utils.AuditHelper
 import com.ritense.valtimo.contract.event.TaskCompletedEvent

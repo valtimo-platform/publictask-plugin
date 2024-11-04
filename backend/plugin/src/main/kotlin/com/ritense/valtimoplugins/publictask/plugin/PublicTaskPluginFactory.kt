@@ -18,7 +18,7 @@ package com.ritense.valtimoplugins.publictask.plugin
 
 import com.ritense.plugin.PluginFactory
 import com.ritense.plugin.service.PluginService
-import com.ritense.valtimo_plugins.publictask.service.PublicTaskService
+import com.ritense.valtimoplugins.publictask.service.PublicTaskService
 
 class PublicTaskPluginFactory(
     pluginService: PluginService,

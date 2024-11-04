@@ -21,7 +21,7 @@ import com.ritense.authorization.AuthorizationService
 import com.ritense.document.service.impl.JsonSchemaDocumentService
 import com.ritense.valtimoplugins.publictask.audit.PublicTaskCamundaProcessJsonSchemaDocumentAuditService
 import com.ritense.valtimoplugins.publictask.audit.PublicTaskCompletedListener
-import com.ritense.valtimo_plugins.publictask.repository.PublicTaskRepository
+import com.ritense.valtimoplugins.publictask.repository.PublicTaskRepository
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

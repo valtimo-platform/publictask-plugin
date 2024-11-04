@@ -20,11 +20,11 @@ import com.ritense.form.service.impl.DefaultFormSubmissionService
 import com.ritense.plugin.service.PluginService
 import com.ritense.processlink.service.ProcessLinkActivityService
 import com.ritense.valtimoplugins.publictask.config.PublicTaskSecurityConfigurer
-import com.ritense.valtimo_plugins.backend.plugin.htmlrenderer.config.config.FreemarkerConfig
-import com.ritense.valtimo_plugins.backend.plugin.htmlrenderer.service.service.HtmlRenderService
-import com.ritense.valtimo_plugins.publictask.plugin.PublicTaskPluginFactory
-import com.ritense.valtimo_plugins.publictask.repository.PublicTaskRepository
-import com.ritense.valtimo_plugins.publictask.service.PublicTaskService
+import com.ritense.valtimoplugins.publictask.htmlrenderer.config.FreemarkerConfig
+import com.ritense.valtimoplugins.publictask.htmlrenderer.service.HtmlRenderService
+import com.ritense.valtimoplugins.publictask.plugin.PublicTaskPluginFactory
+import com.ritense.valtimoplugins.publictask.repository.PublicTaskRepository
+import com.ritense.valtimoplugins.publictask.service.PublicTaskService
 import com.ritense.valtimo.contract.annotation.ProcessBean
 import org.camunda.bpm.engine.RuntimeService
 import org.springframework.beans.factory.annotation.Value
@@ -36,7 +36,7 @@ import org.springframework.core.annotation.Order
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 
 @Configuration
-@EnableJpaRepositories(basePackages = ["com.ritense.valtimo.backend.plugin.repository"])
+@EnableJpaRepositories(basePackages = ["com.ritense.valtimoplugins.publictask.repository"])
 @EntityScan("com.ritense.valtimo.backend.plugin.domain")
 class PublicTaskAutoConfiguration {
 

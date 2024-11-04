@@ -17,7 +17,7 @@
 package com.ritense.valtimoplugins.publictask.web.rest
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.ritense.valtimo_plugins.publictask.service.PublicTaskService
+import com.ritense.valtimoplugins.publictask.service.PublicTaskService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
