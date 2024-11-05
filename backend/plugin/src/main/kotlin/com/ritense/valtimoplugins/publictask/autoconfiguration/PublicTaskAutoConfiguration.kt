@@ -37,7 +37,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 
 @Configuration
 @EnableJpaRepositories(basePackages = ["com.ritense.valtimoplugins.publictask.repository"])
-@EntityScan("com.ritense.valtimo.backend.plugin.domain")
+@EntityScan("com.ritense.valtimoplugins.publictask.domain")
 class PublicTaskAutoConfiguration {
 
     @Bean
