@@ -24,7 +24,7 @@ pluginManager.withPlugin("maven-publish") {
 
                 pom {
                     name = "Public Task plugin module"
-                    description = "The Public Task plugin module contains a plugin for making user tasks available outside the Valtimo UI"
+                    description = "The public task plugin module contains a plugin for making user tasks available outside the Valtimo UI"
                     developers {
                         developer {
                             id = "team-valtimo"
