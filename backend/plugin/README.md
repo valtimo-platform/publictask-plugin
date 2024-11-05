@@ -62,4 +62,4 @@ Note: examples of the processes can be found in the repo of the plugin. This is 
 
 ### Audit
 
-When a public task is completed, this will be logged as a **Public Task**
+When a public task is completed, this will be logged as a **Public Task**.
