@@ -29,9 +29,9 @@ import com.ritense.valtimoplugins.publictask.repository.PublicTaskRepository
 import java.time.LocalDate
 import java.util.UUID
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.camunda.bpm.engine.RuntimeService
-import org.camunda.bpm.engine.delegate.DelegateExecution
-import org.camunda.bpm.engine.delegate.DelegateTask
+import org.operaton.bpm.engine.RuntimeService
+import org.operaton.bpm.engine.delegate.DelegateExecution
+import org.operaton.bpm.engine.delegate.DelegateTask
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 

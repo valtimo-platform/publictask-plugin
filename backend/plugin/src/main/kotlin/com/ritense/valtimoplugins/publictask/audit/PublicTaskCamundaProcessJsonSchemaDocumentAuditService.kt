@@ -31,8 +31,8 @@ import com.ritense.document.service.JsonSchemaDocumentActionProvider.VIEW
 import com.ritense.document.service.impl.JsonSchemaDocumentService
 import com.ritense.processdocument.event.BesluitAddedEvent
 import com.ritense.processdocument.service.ProcessDocumentAuditService
-import com.ritense.valtimo.camunda.processaudit.ProcessEndedEvent
-import com.ritense.valtimo.camunda.processaudit.ProcessStartedEvent
+import com.ritense.valtimo.operaton.processaudit.ProcessEndedEvent
+import com.ritense.valtimo.operaton.processaudit.ProcessStartedEvent
 import com.ritense.valtimo.contract.document.event.DocumentRelatedFileAddedEvent
 import com.ritense.valtimo.contract.document.event.DocumentRelatedFileRemovedEvent
 import com.ritense.valtimo.contract.documentgeneration.event.DossierDocumentGeneratedEvent
