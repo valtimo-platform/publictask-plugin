@@ -14,12 +14,4 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of publictask
- */
-
-export * from './lib/models';
-export * from './lib/publictask.plugin.module';
-export * from './lib/publictask.plugin.specification';
-export * from './lib/components/public-task-configuration/publictask-plugin-configuration.component';
-export * from './lib/components/create-public-task/create-public-task-configuration.component';
+export * from './publictask-plugin-logo';

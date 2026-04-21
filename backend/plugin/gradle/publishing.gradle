@@ -1,5 +1,5 @@
 /*
- * Copyright 2026 Ritense BV, the Netherlands.
+ * Copyright 2015-2021 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,13 +23,13 @@ pluginManager.withPlugin("maven-publish") {
                 version = pluginProperties.pluginVersion
 
                 pom {
-                    name = "Sample plugin module"
-                    description = "A module containing a sample plugin"
+                    name = "Public Task plugin module"
+                    description = "The public task plugin module contains a plugin for making user tasks available outside the Valtimo UI"
                     developers {
                         developer {
                             id = "team-valtimo"
                             name = "Team Valtimo"
-                            email = "support@ritense.com"
+                            email = "team-valtimo@ritense.com"
                         }
                     }
                 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2022 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,16 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of publictask
- */
+package com.ritense.valtimoplugins.publictask.plugin
 
-export * from './lib/models';
-export * from './lib/publictask.plugin.module';
-export * from './lib/publictask.plugin.specification';
-export * from './lib/components/public-task-configuration/publictask-plugin-configuration.component';
-export * from './lib/components/create-public-task/create-public-task-configuration.component';
+import com.ritense.plugin.PluginFactory
+import com.ritense.plugin.service.PluginService
+import com.ritense.valtimoplugins.publictask.service.PublicTaskService
+
+class PublicTaskPluginFactory(
+    pluginService: PluginService,
+    private val publicTaskService: PublicTaskService
+) : PluginFactory<PublicTaskPlugin>(pluginService) {
+
+    override fun create(): PublicTaskPlugin = PublicTaskPlugin(publicTaskService)
+}

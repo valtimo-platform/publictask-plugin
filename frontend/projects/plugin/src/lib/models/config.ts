@@ -14,12 +14,16 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of publictask
- */
+import {PluginConfigurationData} from '@valtimo/plugin';
 
-export * from './lib/models';
-export * from './lib/publictask.plugin.module';
-export * from './lib/publictask.plugin.specification';
-export * from './lib/components/public-task-configuration/publictask-plugin-configuration.component';
-export * from './lib/components/create-public-task/create-public-task-configuration.component';
+interface PublicTaskConfig extends PluginConfigurationData {}
+
+interface CreatePublicTaskConfig {
+    pvAssigneeCandidateContactData: string;
+    timeToLive: string;
+}
+
+export {
+    PublicTaskConfig,
+    CreatePublicTaskConfig
+};

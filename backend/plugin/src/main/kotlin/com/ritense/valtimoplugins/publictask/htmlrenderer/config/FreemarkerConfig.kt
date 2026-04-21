@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2022 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,16 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of publictask
- */
+package com.ritense.valtimoplugins.publictask.htmlrenderer.config
 
-export * from './lib/models';
-export * from './lib/publictask.plugin.module';
-export * from './lib/publictask.plugin.specification';
-export * from './lib/components/public-task-configuration/publictask-plugin-configuration.component';
-export * from './lib/components/create-public-task/create-public-task-configuration.component';
+import freemarker.cache.ClassTemplateLoader
+import freemarker.template.Configuration
+import freemarker.template.TemplateExceptionHandler
+
+class FreemarkerConfig : Configuration(VERSION_2_3_31) {
+    init {
+        templateLoader = ClassTemplateLoader(javaClass, "/config/template")
+        defaultEncoding = Charsets.UTF_8.toString()
+        templateExceptionHandler = TemplateExceptionHandler.RETHROW_HANDLER
+    }
+}
