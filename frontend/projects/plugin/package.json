@@ -10,5 +10,9 @@
     "ngx-spinner": "17.0.0",
     "ngx-toastr": "19.0.0",
     "tslib": "2.6.3"
+  },
+  "scripts": {
+    "build": "ng build @valtimo-plugins/publictask",
+    "watch": "ng build @valtimo-plugins/publictask --watch"
   }
 }
