@@ -27,31 +27,31 @@ dockerCompose {
 }
 
 dependencies {
-    implementation("com.ritense.valtimo:contract")
-    implementation("com.ritense.valtimo:core")
-    implementation("com.ritense.valtimo:plugin-valtimo")
-    implementation("com.ritense.valtimo:plugin-valtimo")
-    implementation("com.ritense.valtimo:form")
-    implementation("com.ritense.valtimo:contract")
-    implementation("com.ritense.valtimo:case")
-    implementation("com.ritense.valtimo:process-document")
-    implementation("com.ritense.valtimo:audit")
-    implementation("com.ritense.valtimo:authorization")
-    implementation("com.ritense.valtimo:value-resolver")
+    compileOnly("com.ritense.valtimo:contract")
+    compileOnly("com.ritense.valtimo:core")
+    compileOnly("com.ritense.valtimo:plugin-valtimo")
+    compileOnly("com.ritense.valtimo:plugin-valtimo")
+    compileOnly("com.ritense.valtimo:form")
+    compileOnly("com.ritense.valtimo:contract")
+    compileOnly("com.ritense.valtimo:case")
+    compileOnly("com.ritense.valtimo:process-document")
+    compileOnly("com.ritense.valtimo:audit")
+    compileOnly("com.ritense.valtimo:authorization")
+    compileOnly("com.ritense.valtimo:value-resolver")
 
-    implementation("org.springframework.boot:spring-boot-starter-webflux")
-    implementation("org.springframework.boot:spring-boot-starter-mail")
-    implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.springframework.boot:spring-boot-starter-security")
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    compileOnly("org.springframework.boot:spring-boot-starter-webflux")
+    compileOnly("org.springframework.boot:spring-boot-starter-mail")
+    compileOnly("org.springframework.boot:spring-boot-starter-web")
+    compileOnly("org.springframework.boot:spring-boot-starter-security")
+    compileOnly("org.springframework.boot:spring-boot-starter-data-jpa")
 
-    implementation("io.github.oshai:kotlin-logging-jvm:$kotlinLoggingVersion")
-    implementation("com.fasterxml.jackson.core:jackson-databind")
-    implementation("com.fasterxml.jackson.core:jackson-annotations")
-    implementation("com.fasterxml.jackson.core:jackson-core")
+    compileOnly("io.github.oshai:kotlin-logging-jvm:$kotlinLoggingVersion")
+    compileOnly("com.fasterxml.jackson.core:jackson-databind")
+    compileOnly("com.fasterxml.jackson.core:jackson-annotations")
+    compileOnly("com.fasterxml.jackson.core:jackson-core")
 
     // Templating engine
-    implementation("org.freemarker:freemarker")
+    compileOnly("org.freemarker:freemarker")
 
     // Testing
     testImplementation("com.ritense.valtimo:case")
