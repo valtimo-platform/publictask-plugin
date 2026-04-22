@@ -16,22 +16,21 @@
 
 package com.ritense.valtimoplugins.publictask.audit
 
-import com.ritense.valtimoplugins.publictask.repository.PublicTaskRepository
-import com.ritense.valtimo.operaton.TaskCompletedListener
 import com.ritense.valtimo.contract.audit.utils.AuditHelper
 import com.ritense.valtimo.contract.event.TaskCompletedEvent
 import com.ritense.valtimo.contract.utils.RequestHelper
 import com.ritense.valtimo.event.OperatonTaskEvent
+import com.ritense.valtimo.operaton.TaskCompletedListener
+import com.ritense.valtimoplugins.publictask.repository.PublicTaskRepository
+import org.springframework.context.ApplicationEventPublisher
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.UUID
-import org.springframework.context.ApplicationEventPublisher
 
 class PublicTaskCompletedListener(
     private val applicationEventPublisher: ApplicationEventPublisher,
-    private val publicTaskRepository: PublicTaskRepository
+    private val publicTaskRepository: PublicTaskRepository,
 ) : TaskCompletedListener(applicationEventPublisher) {
-
     override fun notify(event: OperatonTaskEvent) {
         val delegateTask = event.delegateTask
         with(publicTaskRepository.findAll()) {
@@ -44,17 +43,18 @@ class PublicTaskCompletedListener(
                         occurredOn = LocalDateTime.now(),
                         user = assignee,
                         assignee = delegateTask.assignee,
-                        createdOn = LocalDateTime.ofInstant(
-                            delegateTask.createTime.toInstant(),
-                            ZoneId.systemDefault()
-                        ),
+                        createdOn =
+                            LocalDateTime.ofInstant(
+                                delegateTask.createTime.toInstant(),
+                                ZoneId.systemDefault(),
+                            ),
                         taskId = delegateTask.id,
                         taskName = delegateTask.name,
                         processDefinitionId = delegateTask.processDefinitionId,
                         processInstanceId = delegateTask.processInstanceId,
                         variables = delegateTask.variablesTyped,
-                        businessKey = delegateTask.execution.processBusinessKey
-                    )
+                        businessKey = delegateTask.execution.processBusinessKey,
+                    ),
                 )
             } else {
                 applicationEventPublisher.publishEvent(
@@ -70,8 +70,8 @@ class PublicTaskCompletedListener(
                         delegateTask.processDefinitionId,
                         delegateTask.processInstanceId,
                         delegateTask.variablesTyped,
-                        delegateTask.execution.processBusinessKey
-                    )
+                        delegateTask.execution.processBusinessKey,
+                    ),
                 )
             }
         }

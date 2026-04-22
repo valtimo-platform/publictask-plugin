@@ -24,13 +24,14 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
 
 class PublicTaskSecurityConfigurer : HttpSecurityConfigurer {
-
     override fun configure(http: HttpSecurity) {
         try {
             http.authorizeHttpRequests { requests ->
                 requests
-                    .requestMatchers(antMatcher(GET, "/api/v1/public-task/**")).permitAll()
-                    .requestMatchers(antMatcher(POST, "/api/v1/public-task/**")).permitAll()
+                    .requestMatchers(antMatcher(GET, "/api/v1/public-task/**"))
+                    .permitAll()
+                    .requestMatchers(antMatcher(POST, "/api/v1/public-task/**"))
+                    .permitAll()
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)

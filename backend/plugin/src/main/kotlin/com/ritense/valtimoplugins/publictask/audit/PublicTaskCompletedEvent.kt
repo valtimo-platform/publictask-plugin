@@ -37,10 +37,13 @@ data class PublicTaskCompletedEvent(
     private val processDefinitionId: String,
     private val processInstanceId: String,
     private val variables: Map<String, Any>,
-    private val businessKey: String?
-) : AuditMetaData(id, origin, occurredOn, user), AuditEvent, TaskIdentity, TaskMetaData, ProcessIdentity,
+    private val businessKey: String?,
+) : AuditMetaData(id, origin, occurredOn, user),
+    AuditEvent,
+    TaskIdentity,
+    TaskMetaData,
+    ProcessIdentity,
     VariableScope {
-
     init {
         businessKey?.let {
             require(it.isNotEmpty()) { "businessKey cannot be empty" }
@@ -48,16 +51,25 @@ data class PublicTaskCompletedEvent(
     }
 
     override fun getProcessDefinitionId() = processDefinitionId
+
     override fun getProcessInstanceId() = processInstanceId
+
     override fun createdOn(): LocalDateTime = createdOn
+
     override fun getAssignee() = assignee
+
     override fun getTaskId(): String = taskId
+
     override fun getTaskName() = taskName
+
     override fun getVariables() = variables
+
     override fun getBusinessKey() = businessKey
-    override fun getDocumentId(): UUID? = try {
-        UUID.fromString(businessKey)
-    } catch (e: IllegalArgumentException) {
-        null
-    }
+
+    override fun getDocumentId(): UUID? =
+        try {
+            UUID.fromString(businessKey)
+        } catch (e: IllegalArgumentException) {
+            null
+        }
 }

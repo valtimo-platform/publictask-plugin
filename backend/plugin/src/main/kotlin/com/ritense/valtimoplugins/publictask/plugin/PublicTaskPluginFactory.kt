@@ -22,8 +22,7 @@ import com.ritense.valtimoplugins.publictask.service.PublicTaskService
 
 class PublicTaskPluginFactory(
     pluginService: PluginService,
-    private val publicTaskService: PublicTaskService
+    private val publicTaskService: PublicTaskService,
 ) : PluginFactory<PublicTaskPlugin>(pluginService) {
-
     override fun create(): PublicTaskPlugin = PublicTaskPlugin(publicTaskService)
 }

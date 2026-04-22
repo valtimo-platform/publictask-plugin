@@ -17,7 +17,7 @@
 package com.ritense.valtimoplugins.publictask.repository
 
 import com.ritense.valtimoplugins.publictask.domain.PublicTaskEntity
-import java.util.UUID
 import org.springframework.data.jpa.repository.JpaRepository
+import java.util.UUID
 
 interface PublicTaskRepository : JpaRepository<PublicTaskEntity, UUID>

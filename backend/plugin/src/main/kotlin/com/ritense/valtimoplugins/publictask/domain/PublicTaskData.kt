@@ -25,22 +25,22 @@ data class PublicTaskData(
     val processBusinessKey: String,
     val assigneeCandidateContactData: String,
     val taskExpirationDate: String,
-    var isCompletedByPublicTask: Boolean
+    var isCompletedByPublicTask: Boolean,
 ) {
-
     companion object {
         fun from(
             userTaskId: UUID,
             processBusinessKey: String,
             assigneeCandidateContactData: String,
             timeToLive: String?,
-        ): PublicTaskData = PublicTaskData(
-            publicTaskId = UUID.randomUUID(),
-            userTaskId = userTaskId,
-            processBusinessKey = processBusinessKey,
-            assigneeCandidateContactData = assigneeCandidateContactData,
-            taskExpirationDate = LocalDate.now().plusDays(timeToLive?.toLong() ?: 28L).toString(),
-            isCompletedByPublicTask = false
-        )
+        ): PublicTaskData =
+            PublicTaskData(
+                publicTaskId = UUID.randomUUID(),
+                userTaskId = userTaskId,
+                processBusinessKey = processBusinessKey,
+                assigneeCandidateContactData = assigneeCandidateContactData,
+                taskExpirationDate = LocalDate.now().plusDays(timeToLive?.toLong() ?: 28L).toString(),
+                isCompletedByPublicTask = false,
+            )
     }
 }

@@ -19,13 +19,13 @@ package com.ritense.valtimoplugins.publictask.autoconfiguration
 import com.ritense.form.service.impl.DefaultFormSubmissionService
 import com.ritense.plugin.service.PluginService
 import com.ritense.processlink.service.ProcessLinkActivityService
+import com.ritense.valtimo.contract.annotation.ProcessBean
 import com.ritense.valtimoplugins.publictask.config.PublicTaskSecurityConfigurer
 import com.ritense.valtimoplugins.publictask.htmlrenderer.config.FreemarkerConfig
 import com.ritense.valtimoplugins.publictask.htmlrenderer.service.HtmlRenderService
 import com.ritense.valtimoplugins.publictask.plugin.PublicTaskPluginFactory
 import com.ritense.valtimoplugins.publictask.repository.PublicTaskRepository
 import com.ritense.valtimoplugins.publictask.service.PublicTaskService
-import com.ritense.valtimo.contract.annotation.ProcessBean
 import org.operaton.bpm.engine.RuntimeService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -39,16 +39,14 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 @EnableJpaRepositories(basePackages = ["com.ritense.valtimoplugins.publictask.repository"])
 @EntityScan("com.ritense.valtimoplugins.publictask.domain")
 class PublicTaskAutoConfiguration {
-
     @Bean
     fun freemarkerConfig() = FreemarkerConfig()
 
     @Bean
-    fun htmlRenderService(
-        freemarkerConfig: FreemarkerConfig
-    ): HtmlRenderService = HtmlRenderService(
-        freemarkerConfig = freemarkerConfig
-    )
+    fun htmlRenderService(freemarkerConfig: FreemarkerConfig): HtmlRenderService =
+        HtmlRenderService(
+            freemarkerConfig = freemarkerConfig,
+        )
 
     @Bean
     @ProcessBean
@@ -59,14 +57,15 @@ class PublicTaskAutoConfiguration {
         htmlRenderService: HtmlRenderService,
         defaultFormSubmissionService: DefaultFormSubmissionService,
         @Value("\${valtimo.url}") baseUrl: String,
-    ): PublicTaskService = PublicTaskService(
-        publicTaskRepository = publicTaskRepository,
-        runtimeService = runtimeService,
-        processLinkActivityService = processLinkActivityService,
-        htmlRenderService = htmlRenderService,
-        defaultFormSubmissionService = defaultFormSubmissionService,
-        baseUrl = baseUrl
-    )
+    ): PublicTaskService =
+        PublicTaskService(
+            publicTaskRepository = publicTaskRepository,
+            runtimeService = runtimeService,
+            processLinkActivityService = processLinkActivityService,
+            htmlRenderService = htmlRenderService,
+            defaultFormSubmissionService = defaultFormSubmissionService,
+            baseUrl = baseUrl,
+        )
 
     @Bean
     @Order(270)
@@ -76,9 +75,10 @@ class PublicTaskAutoConfiguration {
     @Bean
     fun publicTaskPluginFactory(
         pluginService: PluginService,
-        publicTaskService: PublicTaskService
-    ): PublicTaskPluginFactory = PublicTaskPluginFactory(
-        pluginService = pluginService,
-        publicTaskService = publicTaskService
-    )
+        publicTaskService: PublicTaskService,
+    ): PublicTaskPluginFactory =
+        PublicTaskPluginFactory(
+            pluginService = pluginService,
+            publicTaskService = publicTaskService,
+        )
 }

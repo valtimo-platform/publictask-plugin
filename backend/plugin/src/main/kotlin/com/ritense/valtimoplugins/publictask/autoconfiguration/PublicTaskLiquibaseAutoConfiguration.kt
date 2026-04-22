@@ -28,11 +28,9 @@ import org.springframework.core.annotation.Order
 @AutoConfiguration
 @ConditionalOnClass(DataSource::class)
 class PublicTaskLiquibaseAutoConfiguration {
-
     @Order(Ordered.HIGHEST_PRECEDENCE + 25)
     @Bean
     @ConditionalOnMissingBean(name = ["liquibaseMasterChangeLogLocation"])
-    fun publicTaskLiquibaseChangeLogLocation(): LiquibaseMasterChangeLogLocation {
-        return LiquibaseMasterChangeLogLocation("config/liquibase/public-task-master.xml")
-    }
+    fun publicTaskLiquibaseChangeLogLocation(): LiquibaseMasterChangeLogLocation =
+        LiquibaseMasterChangeLogLocation("config/liquibase/public-task-master.xml")
 }

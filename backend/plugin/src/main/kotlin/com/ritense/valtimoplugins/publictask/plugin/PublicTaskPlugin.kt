@@ -22,41 +22,39 @@ import com.ritense.plugin.annotation.PluginActionProperty
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.valtimoplugins.publictask.domain.PublicTaskData
 import com.ritense.valtimoplugins.publictask.service.PublicTaskService
-import java.util.UUID
 import org.operaton.bpm.engine.delegate.DelegateExecution
+import java.util.UUID
 
 @Plugin(
     key = "public-task",
     title = "Public Task Plugin",
-    description = "Expose a public task outside the Valtimo UI with the Public Task plugin"
+    description = "Expose a public task outside the Valtimo UI with the Public Task plugin",
 )
 class PublicTaskPlugin(
-    private val publicTaskService: PublicTaskService
+    private val publicTaskService: PublicTaskService,
 ) {
-
     @PluginAction(
         key = "create-public-task",
         title = "Create Public Task",
         description = "create a public task and expose it",
-        activityTypes = [ActivityTypeWithEventName.SERVICE_TASK_START]
+        activityTypes = [ActivityTypeWithEventName.SERVICE_TASK_START],
     )
-
     fun createPublicTask(
         execution: DelegateExecution,
         @PluginActionProperty pvAssigneeCandidateContactData: String,
         @PluginActionProperty timeToLive: String?,
     ) {
-
-        val publicTaskData = PublicTaskData.from(
-            userTaskId = UUID.fromString(execution.getVariableLocal("userTaskId") as String),
-            processBusinessKey = execution.processBusinessKey,
-            assigneeCandidateContactData = pvAssigneeCandidateContactData,
-            timeToLive = timeToLive
-        )
+        val publicTaskData =
+            PublicTaskData.from(
+                userTaskId = UUID.fromString(execution.getVariableLocal("userTaskId") as String),
+                processBusinessKey = execution.processBusinessKey,
+                assigneeCandidateContactData = pvAssigneeCandidateContactData,
+                timeToLive = timeToLive,
+            )
 
         publicTaskService.createAndSendPublicTaskUrl(
             execution = execution,
-            publicTaskData = publicTaskData
+            publicTaskData = publicTaskData,
         )
     }
 }
