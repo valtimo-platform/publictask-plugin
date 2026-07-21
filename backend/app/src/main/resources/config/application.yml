@@ -67,9 +67,11 @@ server:
     min-response-size: 1024
 
 valtimo:
+  url: http://localhost:8080
   database: postgres
   app:
     scheme: http
+    host: localhost
   oauth:
     tokenValidityInSeconds: 3600 # Token is valid 1 hour
   hardening:

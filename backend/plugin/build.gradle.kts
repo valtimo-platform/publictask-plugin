@@ -27,16 +27,14 @@ dockerCompose {
 }
 
 dependencies {
-    compileOnly("com.ritense.valtimo:contract")
-    compileOnly("com.ritense.valtimo:core")
-    compileOnly("com.ritense.valtimo:plugin-valtimo")
-    compileOnly("com.ritense.valtimo:plugin-valtimo")
-    compileOnly("com.ritense.valtimo:form")
-    compileOnly("com.ritense.valtimo:contract")
-    compileOnly("com.ritense.valtimo:case")
-    compileOnly("com.ritense.valtimo:process-document")
     compileOnly("com.ritense.valtimo:audit")
     compileOnly("com.ritense.valtimo:authorization")
+    compileOnly("com.ritense.valtimo:case")
+    compileOnly("com.ritense.valtimo:contract")
+    compileOnly("com.ritense.valtimo:core")
+    compileOnly("com.ritense.valtimo:form")
+    compileOnly("com.ritense.valtimo:plugin-valtimo")
+    compileOnly("com.ritense.valtimo:process-document")
     compileOnly("com.ritense.valtimo:value-resolver")
 
     compileOnly("org.springframework.boot:spring-boot-starter-webflux")
@@ -55,8 +53,6 @@ dependencies {
 
     // Testing
     testImplementation("com.ritense.valtimo:building-block")
-    testImplementation("com.ritense.valtimo:contract")
-    testImplementation("com.ritense.valtimo:core")
     testImplementation("com.ritense.valtimo:plugin")
     testImplementation("com.ritense.valtimo:temporary-resource-storage")
     testImplementation("com.ritense.valtimo:test-utils-common")
@@ -64,15 +60,6 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 
     testImplementation("org.postgresql:postgresql")
-
-    testImplementation("com.ritense.valtimo:plugin-valtimo")
-    testImplementation("com.ritense.valtimo:plugin-valtimo")
-    testImplementation("com.ritense.valtimo:form")
-    testImplementation("com.ritense.valtimo:case")
-    testImplementation("com.ritense.valtimo:process-document")
-    testImplementation("com.ritense.valtimo:audit")
-    testImplementation("com.ritense.valtimo:authorization")
-    testImplementation("com.ritense.valtimo:value-resolver")
 
     testImplementation("org.mockito.kotlin:mockito-kotlin:$mockitoKotlinVersion")
     testImplementation("org.freemarker:freemarker")

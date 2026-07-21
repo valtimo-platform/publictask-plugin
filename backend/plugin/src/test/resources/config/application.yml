@@ -30,6 +30,7 @@ spring-actuator:
   username: admin
   password: password
 valtimo:
+  url: http://localhost:8080
   plugin:
     encryption-secret: "abcdefghijklmnop"
 

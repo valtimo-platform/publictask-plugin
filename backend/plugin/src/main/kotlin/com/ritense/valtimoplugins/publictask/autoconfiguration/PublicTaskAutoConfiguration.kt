@@ -56,9 +56,20 @@ class PublicTaskAutoConfiguration {
         processLinkActivityService: ProcessLinkActivityService,
         htmlRenderService: HtmlRenderService,
         defaultFormSubmissionService: DefaultFormSubmissionService,
-        @Value("\${valtimo.url}") baseUrl: String,
-    ): PublicTaskService =
-        PublicTaskService(
+        @Value("\${valtimo.app.scheme:https}") scheme: String,
+        @Value("\${valtimo.app.hostname:}") hostname: String,
+        @Value("\${valtimo.url:}") valtimoUrl: String,
+    ): PublicTaskService {
+        val baseUrl =
+            when {
+                valtimoUrl.isNotBlank() -> valtimoUrl
+                hostname.isNotBlank() -> "$scheme://$hostname"
+                else ->
+                    error(
+                        "Neither 'valtimo.url' nor 'valtimo.app.hostname' is configured for the public task URL",
+                    )
+            }
+        return PublicTaskService(
             publicTaskRepository = publicTaskRepository,
             runtimeService = runtimeService,
             processLinkActivityService = processLinkActivityService,
@@ -66,6 +77,7 @@ class PublicTaskAutoConfiguration {
             defaultFormSubmissionService = defaultFormSubmissionService,
             baseUrl = baseUrl,
         )
+    }
 
     @Bean
     @Order(270)

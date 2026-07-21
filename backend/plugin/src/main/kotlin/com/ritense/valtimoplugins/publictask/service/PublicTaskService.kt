@@ -32,7 +32,7 @@ import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.operaton.bpm.engine.delegate.DelegateTask
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import java.net.URI
+import org.springframework.web.util.UriComponentsBuilder
 import java.time.LocalDate
 import java.util.UUID
 
@@ -66,9 +66,13 @@ class PublicTaskService(
     }
 
     fun createPublicTaskHtml(publicTaskId: UUID): ResponseEntity<String> {
+        val publicTaskEntity =
+            publicTaskRepository.findById(publicTaskId).orElse(null)
+                ?: return TASK_NOT_AVAILABLE_ERROR
+
         val formHtml =
             try {
-                val userTaskId = publicTaskRepository.getReferenceById(publicTaskId).userTaskId
+                val userTaskId = publicTaskEntity.userTaskId
                 val operatonTaskData =
                     runWithoutAuthorization {
                         processLinkActivityService.openTask(userTaskId).properties as FormTaskOpenResultProperties
@@ -89,10 +93,12 @@ class PublicTaskService(
     }
 
     fun completeUserTaskWithPublicTaskSubmission(
-        publicTaskId: String,
+        publicTaskId: UUID,
         submission: JsonNode,
     ): ResponseEntity<String> {
-        val publicTaskEntity = publicTaskRepository.getReferenceById(UUID.fromString(publicTaskId))
+        val publicTaskEntity =
+            publicTaskRepository.findById(publicTaskId).orElse(null)
+                ?: return TASK_NOT_AVAILABLE_ERROR
 
         if (LocalDate.parse(publicTaskEntity.taskExpirationDate).isBefore(LocalDate.now())) {
             return TASK_NOT_AVAILABLE_ERROR
@@ -132,7 +138,12 @@ class PublicTaskService(
     }
 
     private fun publicTaskUrl(publicTaskId: UUID): String =
-        URI("${baseUrl.removeSuffix("/")}${PUBLIC_TASK_URL}?publicTaskId=$publicTaskId").toString()
+        UriComponentsBuilder
+            .fromUriString(baseUrl.removeSuffix("/"))
+            .path(PUBLIC_TASK_URL)
+            .queryParam("publicTaskId", publicTaskId)
+            .build()
+            .toUriString()
 
     private fun savePublicTaskEntity(publicTaskData: PublicTaskData) {
         publicTaskRepository

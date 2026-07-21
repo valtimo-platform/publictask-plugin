@@ -39,7 +39,7 @@ class PublicTaskResource(
 
     @PostMapping
     fun completeUserTask(
-        @RequestParam publicTaskId: String,
+        @RequestParam publicTaskId: UUID,
         @RequestBody submission: JsonNode,
     ): ResponseEntity<String> = publicTaskService.completeUserTaskWithPublicTaskSubmission(publicTaskId, submission)
 }
