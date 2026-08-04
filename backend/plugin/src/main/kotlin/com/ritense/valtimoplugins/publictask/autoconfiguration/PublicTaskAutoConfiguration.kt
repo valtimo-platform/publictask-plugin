@@ -26,6 +26,7 @@ import com.ritense.valtimoplugins.publictask.htmlrenderer.service.HtmlRenderServ
 import com.ritense.valtimoplugins.publictask.plugin.PublicTaskPluginFactory
 import com.ritense.valtimoplugins.publictask.repository.PublicTaskRepository
 import com.ritense.valtimoplugins.publictask.service.PublicTaskService
+import com.ritense.valtimoplugins.publictask.web.rest.PublicTaskResource
 import org.operaton.bpm.engine.RuntimeService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -63,7 +64,10 @@ class PublicTaskAutoConfiguration {
         val baseUrl =
             when {
                 valtimoUrl.isNotBlank() -> valtimoUrl
-                hostname.isNotBlank() -> "$scheme://$hostname"
+                hostname.isNotBlank() ->
+                    // The hostname may already include a scheme (e.g. "https://example.org"); only
+                    // prepend the configured scheme when it does not, to avoid producing "https://https://...".
+                    if (hostname.contains("://")) hostname else "$scheme://$hostname"
                 else ->
                     error(
                         "Neither 'valtimo.url' nor 'valtimo.app.hostname' is configured for the public task URL",
@@ -78,6 +82,11 @@ class PublicTaskAutoConfiguration {
             baseUrl = baseUrl,
         )
     }
+
+    @Bean
+    @ConditionalOnMissingBean(PublicTaskResource::class)
+    fun publicTaskResource(publicTaskService: PublicTaskService): PublicTaskResource =
+        PublicTaskResource(publicTaskService = publicTaskService)
 
     @Bean
     @Order(270)

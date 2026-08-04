@@ -16,10 +16,20 @@
 
 package com.ritense.valtimoplugins.publictask
 
+import com.ritense.valtimoplugins.publictask.web.rest.PublicTaskResource
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
+import org.springframework.context.annotation.ComponentScan
+import org.springframework.context.annotation.FilterType
 
 @SpringBootApplication
+// Exclude PublicTaskResource from component scanning so the test context registers it exclusively through
+// PublicTaskAutoConfiguration, mirroring a real Valtimo host that does not scan the plugin's package.
+@ComponentScan(
+    excludeFilters = [
+        ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = [PublicTaskResource::class]),
+    ],
+)
 class TestApplication
 
 fun main(args: Array<String>) {

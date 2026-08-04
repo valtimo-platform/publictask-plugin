@@ -2,6 +2,9 @@
 
 Overzicht van wijzigingen per versie van de Publictask-plugin.
 
+## 2.1.1
+Bugfixes voor de publieke taak-URL
+
 ## 2.1.0
 De basis-URL voor publieke taken kan nu ook worden afgeleid van `VALTIMO_APP_HOSTNAME` (met `VALTIMO_APP_SCHEME`). `VALTIMO_URL` blijft leidend.
 
