@@ -50,16 +50,25 @@
 <body>
 <div id="form" class="d-block"></div>
 <div id="result" class="d-none"></div>
+<#--
+    The form definition is emitted as a data block instead of as a JavaScript literal, so that its content is never
+    parsed as script. HTML escaping would be the wrong escaping here - the content of a script element is raw text,
+    where entities are not decoded - so the value is marked as no_esc and encoded for this context instead: in JSON a
+    '<' can only occur inside a string literal, where "\u003C" means exactly the same thing. Replacing every '<'
+    therefore keeps the JSON intact while removing every sequence ("</script", "<!--") that the HTML parser acts on.
+-->
+<script id="form-io-form" type="application/json">${form_io_form?replace("<", "\\u003C")?no_esc}</script>
 <script src="https://cdn.form.io/formiojs/formio.full.min.js"></script>
 <script>
     const formContainer = document.getElementById('form');
     const resultContainer = document.getElementById('result');
-    const formJson = ${form_io_form};
+    const formJson = JSON.parse(document.getElementById('form-io-form').textContent);
 
     Formio.createForm(formContainer, formJson).then(function (form) {
         form.on('submit', function (submission) {
             console.debug('Form submitted', submission);
-            fetch('${public_task_url}', {
+            <#-- js_string, not the default HTML escaping: this value sits in a JavaScript string literal. -->
+            fetch('${public_task_url?js_string?no_esc}', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(submission.data)

@@ -39,6 +39,15 @@ internal class PublicTaskResourceIT : BaseIntegrationTest() {
         // would fall through to the static resource handler ("No static resource api/v1/public-task").
         // Requesting an unknown task must therefore reach the controller and return its "task not available" body.
         mockMvc
+            .perform(get("/api/v1/public-task/{publicTaskId}", UUID.randomUUID().toString()))
+            .andExpect(status().isNotFound)
+            .andExpect(content().string(containsString("This task does not exist")))
+    }
+
+    @Test
+    fun `GET public-task endpoint still accepts the public task id as a query parameter`() {
+        // Links that were sent to applicants before the id moved into the path must keep working.
+        mockMvc
             .perform(get("/api/v1/public-task").queryParam("publicTaskId", UUID.randomUUID().toString()))
             .andExpect(status().isNotFound)
             .andExpect(content().string(containsString("This task does not exist")))
