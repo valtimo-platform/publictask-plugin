@@ -2,6 +2,10 @@
 
 Overzicht van wijzigingen per versie van de Publictask-plugin.
 
+## 2.1.2
+
+Valtimo bijgewerkt naar versie 13.41.0.
+
 ## 2.1.1
 Bugfixes voor de publieke taak-URL
 
