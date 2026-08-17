@@ -53,10 +53,13 @@ dependencies {
 
     // Testing
     testImplementation("com.ritense.valtimo:building-block")
+    testImplementation("com.ritense.valtimo:core")
+    testImplementation("com.ritense.valtimo:form")
     testImplementation("com.ritense.valtimo:plugin")
     testImplementation("com.ritense.valtimo:temporary-resource-storage")
     testImplementation("com.ritense.valtimo:test-utils-common")
 
+    testImplementation("org.springframework.boot:spring-boot-starter-data-jpa")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 
     testImplementation("org.postgresql:postgresql")

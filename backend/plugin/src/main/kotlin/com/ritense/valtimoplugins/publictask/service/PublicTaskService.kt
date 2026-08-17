@@ -34,6 +34,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.util.UriComponentsBuilder
 import java.time.LocalDate
+import java.time.format.DateTimeParseException
 import java.util.UUID
 
 class PublicTaskService(
@@ -66,9 +67,7 @@ class PublicTaskService(
     }
 
     fun createPublicTaskHtml(publicTaskId: UUID): ResponseEntity<String> {
-        val publicTaskEntity =
-            publicTaskRepository.findById(publicTaskId).orElse(null)
-                ?: return TASK_NOT_AVAILABLE_ERROR
+        val publicTaskEntity = findAvailablePublicTask(publicTaskId) ?: return TASK_NOT_AVAILABLE_ERROR
 
         val formHtml =
             try {
@@ -96,13 +95,7 @@ class PublicTaskService(
         publicTaskId: UUID,
         submission: JsonNode,
     ): ResponseEntity<String> {
-        val publicTaskEntity =
-            publicTaskRepository.findById(publicTaskId).orElse(null)
-                ?: return TASK_NOT_AVAILABLE_ERROR
-
-        if (LocalDate.parse(publicTaskEntity.taskExpirationDate).isBefore(LocalDate.now())) {
-            return TASK_NOT_AVAILABLE_ERROR
-        }
+        val publicTaskEntity = findAvailablePublicTask(publicTaskId) ?: return TASK_NOT_AVAILABLE_ERROR
 
         val operatonTask =
             try {
@@ -137,11 +130,36 @@ class PublicTaskService(
         return ResponseEntity("Your response has been submitted", HttpStatus.OK)
     }
 
+    /**
+     * Returns the public task only while it is still available: not completed through the public form and not past
+     * its expiration date. Both showing the form and submitting it go through this, so that the two cannot drift
+     * apart and leave the form - which contains case data - retrievable for longer than the task itself lives.
+     */
+    private fun findAvailablePublicTask(publicTaskId: UUID): PublicTaskEntity? =
+        publicTaskRepository
+            .findById(publicTaskId)
+            .orElse(null)
+            ?.takeIf { it.isAvailable() }
+
+    private fun PublicTaskEntity.isAvailable(): Boolean {
+        if (isCompletedByPublicTask) {
+            return false
+        }
+        val expirationDate =
+            try {
+                LocalDate.parse(taskExpirationDate)
+            } catch (e: DateTimeParseException) {
+                logger.warn(e) { "Public task has an unusable expiration date and is treated as expired" }
+                return false
+            }
+        return !expirationDate.isBefore(LocalDate.now())
+    }
+
     private fun publicTaskUrl(publicTaskId: UUID): String =
         UriComponentsBuilder
             .fromUriString(baseUrl.removeSuffix("/"))
             .path(PUBLIC_TASK_URL)
-            .queryParam("publicTaskId", publicTaskId)
+            .pathSegment(publicTaskId.toString())
             .build()
             .toUriString()
 
@@ -157,7 +175,9 @@ class PublicTaskService(
                     isCompletedByPublicTask = publicTaskData.isCompletedByPublicTask,
                 ),
             ).also {
-                logger.debug { "Saved public task entity $it" }
+                // Only the user task is logged: the public task id is what grants access to the form, so it must
+                // not end up in log files.
+                logger.debug { "Saved public task entity for user task ${it.userTaskId}" }
             }
     }
 
