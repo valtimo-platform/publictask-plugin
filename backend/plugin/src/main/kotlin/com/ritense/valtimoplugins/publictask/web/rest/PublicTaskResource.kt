@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.ritense.valtimoplugins.publictask.service.PublicTaskService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -32,13 +33,31 @@ import java.util.UUID
 class PublicTaskResource(
     private val publicTaskService: PublicTaskService,
 ) {
-    @GetMapping
+    @GetMapping("/{publicTaskId}")
     fun sendPublicTaskHtml(
+        @PathVariable publicTaskId: UUID,
+    ): ResponseEntity<String> = publicTaskService.createPublicTaskHtml(publicTaskId)
+
+    @PostMapping("/{publicTaskId}")
+    fun completeUserTask(
+        @PathVariable publicTaskId: UUID,
+        @RequestBody submission: JsonNode,
+    ): ResponseEntity<String> = publicTaskService.completeUserTaskWithPublicTaskSubmission(publicTaskId, submission)
+
+    /**
+     * Kept so that public task links which were sent out before the id moved into the path keep working. New links
+     * use the path form, because an id in the query string ends up in Referer headers, proxy logs and browser
+     * history.
+     */
+    @Deprecated("Use GET /api/v1/public-task/{publicTaskId}")
+    @GetMapping(params = ["publicTaskId"])
+    fun sendPublicTaskHtmlForQueryParameter(
         @RequestParam publicTaskId: UUID,
     ): ResponseEntity<String> = publicTaskService.createPublicTaskHtml(publicTaskId)
 
-    @PostMapping
-    fun completeUserTask(
+    @Deprecated("Use POST /api/v1/public-task/{publicTaskId}")
+    @PostMapping(params = ["publicTaskId"])
+    fun completeUserTaskForQueryParameter(
         @RequestParam publicTaskId: UUID,
         @RequestBody submission: JsonNode,
     ): ResponseEntity<String> = publicTaskService.completeUserTaskWithPublicTaskSubmission(publicTaskId, submission)

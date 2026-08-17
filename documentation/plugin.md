@@ -38,6 +38,22 @@ URL is resolved from application configuration, in the following order of preced
 This keeps existing setups based on `VALTIMO_URL` unchanged, while allowing deployments that only
 configure `VALTIMO_APP_HOSTNAME` (such as Ritense Cloud applications) to generate the URL correctly.
 
+The public task id is a path segment: `<base>/api/v1/public-task/<publicTaskId>`. Older links, which
+carried the id as a `publicTaskId` query parameter, are still accepted so that URLs that have already
+been sent out keep working, but that form is deprecated: an id in the query string ends up in
+`Referer` headers, proxy logs and browser history.
+
+### Availability of the public task
+
+The form is only rendered while the public task is still available. It is refused once the task has
+been submitted through the public form, and once the **TimeToLive** window of the process link has
+passed. Showing the form and submitting it apply the same check.
+
+The generated HTML is an example that implementations are expected to replace. When writing your own
+template, keep the form definition in a `<script type="application/json">` data block and read it with
+`JSON.parse`, as the example does. The form definition contains case data, so interpolating it straight
+into a script block would let that data inject markup or script into the page.
+
 ## Available actions
 
 The Public Task plugin supports the following actions that can be configured in process links in order to store
