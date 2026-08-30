@@ -21,8 +21,10 @@ import org.hamcrest.Matchers.containsString
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
+import org.springframework.mock.web.MockMultipartFile
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.util.UUID
@@ -34,13 +36,21 @@ internal class PublicTaskResourceIT : BaseIntegrationTest() {
 
     @Test
     fun `GET public-task endpoint is mapped to the controller and does not fall through to static resource handling`() {
-        // Regression guard: PublicTaskResource must be registered via PublicTaskAutoConfiguration, not only via
-        // component scanning. On a real Valtimo host the plugin package is not scanned, so an unmapped endpoint
-        // would fall through to the static resource handler ("No static resource api/v1/public-task").
-        // Requesting an unknown task must therefore reach the controller and return its "task not available" body.
+        // Regression guard: the resource must come from the autoconfiguration, as a host does not scan it.
         mockMvc
             .perform(get("/api/v1/public-task/{publicTaskId}", UUID.randomUUID().toString()))
             .andExpect(status().isNotFound)
+            .andExpect(content().string(containsString("This task does not exist")))
+    }
+
+    @Test
+    fun `POST attachment endpoint is mapped and reachable without authentication`() {
+        // Must not be behind authentication, and an unknown task must be refused by the service.
+        mockMvc
+            .perform(
+                multipart("/api/v1/public-task/{publicTaskId}/attachment", UUID.randomUUID().toString())
+                    .file(MockMultipartFile("file", "bijlage.pdf", "application/pdf", "content".toByteArray())),
+            ).andExpect(status().isNotFound)
             .andExpect(content().string(containsString("This task does not exist")))
     }
 

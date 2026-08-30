@@ -2,6 +2,9 @@
 
 Overzicht van wijzigingen per versie van de Publictask-plugin.
 
+## 2.2.0
+Uploadvelden werken nu in het publieke formulier. Bijlagen die iemand daar meestuurt, komen op dezelfde manier in de zaak terecht als bij een taak binnen GZAC.
+
 ## 2.1.3
 Valtimo bijgewerkt naar versie 13.41.0.
 

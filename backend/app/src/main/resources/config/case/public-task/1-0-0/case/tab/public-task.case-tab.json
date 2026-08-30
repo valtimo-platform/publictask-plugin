@@ -1,16 +1,23 @@
 [
-  {
-    "key" : "summary",
-    "name" : null,
-    "type" : "standard",
-    "contentKey" : "summary",
-    "showTasks" : false
-  },
-  {
-    "key" : "progress",
-    "name" : null,
-    "type" : "standard",
-    "contentKey" : "progress",
-    "showTasks" : false
-  }
+    {
+        "key": "summary",
+        "name": null,
+        "type": "standard",
+        "contentKey": "summary",
+        "showTasks": true
+    },
+    {
+        "key": "progress",
+        "name": null,
+        "type": "standard",
+        "contentKey": "progress",
+        "showTasks": true
+    },
+    {
+        "key": "documents",
+        "name": null,
+        "type": "standard",
+        "contentKey": "documents",
+        "showTasks": false
+    }
 ]

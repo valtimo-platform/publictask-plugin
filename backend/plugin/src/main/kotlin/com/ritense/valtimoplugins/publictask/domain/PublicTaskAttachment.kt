@@ -14,17 +14,23 @@
  * limitations under the License.
  */
 
-package com.ritense.valtimoplugins.publictask.plugin
+package com.ritense.valtimoplugins.publictask.domain
 
-import com.ritense.plugin.PluginFactory
-import com.ritense.plugin.service.PluginService
-import com.ritense.valtimoplugins.publictask.service.PublicTaskService
-import com.ritense.valueresolver.ValueResolverService
-
-class PublicTaskPluginFactory(
-    pluginService: PluginService,
-    private val publicTaskService: PublicTaskService,
-    private val valueResolverService: ValueResolverService,
-) : PluginFactory<PublicTaskPlugin>(pluginService) {
-    override fun create(): PublicTaskPlugin = PublicTaskPlugin(publicTaskService, valueResolverService)
+// The value one uploaded file takes in the submission. Valtimo's UploadField reads `/data/resourceId`.
+data class PublicTaskAttachment(
+    val originalName: String,
+    val name: String,
+    val size: Long,
+    val type: String,
+    val data: PublicTaskAttachmentData,
+    val storage: String = STORAGE_PROVIDER_NAME,
+) {
+    companion object {
+        // The name the page registers its Form.io storage provider under.
+        const val STORAGE_PROVIDER_NAME = "publicTask"
+    }
 }
+
+data class PublicTaskAttachmentData(
+    val resourceId: String,
+)

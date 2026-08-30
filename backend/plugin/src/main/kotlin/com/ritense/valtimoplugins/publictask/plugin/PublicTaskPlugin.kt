@@ -20,8 +20,12 @@ import com.ritense.plugin.annotation.Plugin
 import com.ritense.plugin.annotation.PluginAction
 import com.ritense.plugin.annotation.PluginActionProperty
 import com.ritense.processlink.domain.ActivityTypeWithEventName
+import com.ritense.valtimoplugins.publictask.domain.PublicTaskAttachmentLimits
 import com.ritense.valtimoplugins.publictask.domain.PublicTaskData
+import com.ritense.valtimoplugins.publictask.domain.PublicTaskDocumentMetadata
 import com.ritense.valtimoplugins.publictask.service.PublicTaskService
+import com.ritense.valueresolver.ValueResolverService
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.operaton.bpm.engine.delegate.DelegateExecution
 import java.util.UUID
 
@@ -32,7 +36,9 @@ import java.util.UUID
 )
 class PublicTaskPlugin(
     private val publicTaskService: PublicTaskService,
+    private val valueResolverService: ValueResolverService,
 ) {
+    /** Creates a public task and hands its URL to the process. The attachment limits bound its upload endpoint. */
     @PluginAction(
         key = "create-public-task",
         title = "Create Public Task",
@@ -43,6 +49,10 @@ class PublicTaskPlugin(
         execution: DelegateExecution,
         @PluginActionProperty pvAssigneeCandidateContactData: String,
         @PluginActionProperty timeToLive: String?,
+        @PluginActionProperty maxAttachments: Int?,
+        @PluginActionProperty maxAttachmentSizeInBytes: Long?,
+        @PluginActionProperty acceptedMimeTypes: String?,
+        @PluginActionProperty documentMetadata: Map<String, String?>?,
     ) {
         val publicTaskData =
             PublicTaskData.from(
@@ -50,11 +60,61 @@ class PublicTaskPlugin(
                 processBusinessKey = execution.processBusinessKey,
                 assigneeCandidateContactData = pvAssigneeCandidateContactData,
                 timeToLive = timeToLive,
+                attachmentLimits =
+                    PublicTaskAttachmentLimits.of(
+                        maxAttachments = maxAttachments,
+                        maxSizeInBytes = maxAttachmentSizeInBytes,
+                        acceptedMimeTypes = acceptedMimeTypes,
+                    ),
+                documentMetadata = PublicTaskDocumentMetadata.of(resolved(execution, documentMetadata)),
             )
 
         publicTaskService.createAndSendPublicTaskUrl(
             execution = execution,
             publicTaskData = publicTaskData,
         )
+    }
+
+    /**
+     * Valtimo resolves a placeholder only in an action property that is a string, and this one is a map, so
+     * its values are resolved here instead.
+     */
+    private fun resolved(
+        execution: DelegateExecution,
+        documentMetadata: Map<String, String?>?,
+    ): Map<String, String?>? =
+        documentMetadata?.mapValues { (key, value) ->
+            if (value.isNullOrBlank()) value else resolvedValue(execution, key, value)
+        }
+
+    /**
+     * One value at a time, so that a value which resolves to nothing costs only its own key.
+     */
+    private fun resolvedValue(
+        execution: DelegateExecution,
+        key: String,
+        value: String,
+    ): String? {
+        val resolved =
+            try {
+                valueResolverService
+                    .resolveValues(execution.processInstanceId, execution, listOf(value))[value]
+            } catch (e: Exception) {
+                // Everything before a ':' reads as a prefix, and an unknown one is refused rather than
+                // resolved - which is what ordinary text with a colon in it looks like from here.
+                logger.debug(e) { "Kept document metadata '$key' of a public task as it was written" }
+                return value
+            }
+        if (resolved == null) {
+            logger.warn {
+                "Document metadata '$key' of a public task resolves to nothing, so the files of this task " +
+                    "are filed without it. Check that '$value' exists at the moment this task runs."
+            }
+        }
+        return resolved?.toString()
+    }
+
+    companion object {
+        private val logger = KotlinLogging.logger {}
     }
 }

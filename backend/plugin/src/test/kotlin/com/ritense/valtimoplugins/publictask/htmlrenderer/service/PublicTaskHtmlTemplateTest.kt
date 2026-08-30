@@ -16,7 +16,6 @@
 
 package com.ritense.valtimoplugins.publictask.htmlrenderer.service
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.valtimoplugins.publictask.BaseTest
 import com.ritense.valtimoplugins.publictask.htmlrenderer.config.FreemarkerConfig
 import freemarker.core.HTMLOutputFormat
@@ -26,8 +25,6 @@ import org.junit.jupiter.api.Test
 import java.io.StringWriter
 
 internal class PublicTaskHtmlTemplateTest : BaseTest() {
-    private val objectMapper = ObjectMapper()
-
     private val htmlRenderService = HtmlRenderService(FreemarkerConfig())
 
     @Test
@@ -90,9 +87,102 @@ internal class PublicTaskHtmlTemplateTest : BaseTest() {
         assertThat(rendered).doesNotContain("</script>")
     }
 
+    @Test
+    fun `the page uploads to the public task, and not to a target the form definition chooses`() {
+        val html = render()
+
+        assertThat(html).contains("Formio.Providers.addProvider('storage', 'publicTask', publicTaskStorage)")
+        assertThat(html).contains(
+            "const attachmentUrl = 'https://valtimo.example.org/api/v1/public-task/$PUBLIC_TASK_ID/attachment'",
+        )
+        assertThat(html).contains("request.open('POST', attachmentUrl)")
+    }
+
+    @Test
+    fun `the attachment url is escaped for the javascript string literal it is placed in`() {
+        val html =
+            render(
+                publicTaskAttachmentUrl =
+                    """https://valtimo.example.org/api/v1/public-task/1/attachment' + alert(1) + '""",
+            )
+
+        assertThat(html).doesNotContain("""attachment' + alert(1) + '""")
+        assertThat(html).contains("""attachment\' + alert(1) + \'""")
+    }
+
+    @Test
+    fun `the upload field is one large target carrying one message`() {
+        val html = render()
+
+        assertThat(html).contains("content: 'Click here to upload a file'")
+        assertThat(html).contains("font-size: 0;")
+        assertThat(html).contains(".list-group:not(:has(.list-group-item:not(.list-group-header)))")
+        assertThat(html).contains("""browse.click()""")
+        assertThat(html).contains("""new DragEvent('drop', {dataTransfer: event.dataTransfer, bubbles: false})""")
+    }
+
+    @Test
+    fun `a file that was added can be removed again`() {
+        val html = render()
+
+        // Form.io's remove buttons are empty Font Awesome <i>s, and this page loads no icon font.
+        assertThat(html).contains(""".formio-component-file [ref="removeLink"]""")
+        assertThat(html).contains(""".formio-component-file [ref="fileStatusRemove"]""")
+        assertThat(html).contains("""content: '\2715';""")
+        // A click on those buttons is Form.io's to handle, so it must not be forwarded to the browse link.
+        assertThat(html).contains("""const FILE_LIST = '.list-group, .file';""")
+        assertThat(html).contains("""event.target.closest(FILE_LIST)""")
+    }
+
+    @Test
+    fun `a file that was refused is not shown as one that was added`() {
+        val html = render()
+
+        // Form.io lists a refused file's name and size above the reason; only the reason is left.
+        assertThat(html).contains(".formio-component-file .file:has(.alert-danger) .fileSize")
+        assertThat(html).contains(".formio-component-file .file:has(.alert-danger) .fileName")
+    }
+
+    @Test
+    fun `the form renderer is pinned, and checked against its hash`() {
+        val html = render()
+
+        // The styling and the handlers in this page are written against the markup of this exact version.
+        assertThat(html).contains("https://cdn.form.io/formiojs/4.21.2/formio.full.min.js")
+        assertThat(html).contains("integrity=\"sha384-")
+        assertThat(html).doesNotContain("https://cdn.form.io/formiojs/formio.full.min.js")
+    }
+
+    @Test
+    fun `text meant for a screen reader is not shown to everyone`() {
+        val html = render()
+
+        // Bootstrap 5 renamed .sr-only; left unstyled, a failed upload states its message twice.
+        assertThat(html).contains(".sr-only {")
+        assertThat(html).contains("clip: rect(0, 0, 0, 0);")
+    }
+
+    @Test
+    fun `the page tells the server which field a file was chosen in`() {
+        val html = render()
+
+        assertThat(html).contains("const componentKey = options && options.componentKey;")
+        assertThat(html).contains("body.append('componentKey', componentKey)")
+    }
+
+    @Test
+    fun `the maximum attachment size reaches the page as a number, not as a formatted one`() {
+        val html = render(maxAttachmentSizeInBytes = 10_485_760)
+
+        // Freemarker would otherwise render this as "10,485,760", which is not valid JavaScript.
+        assertThat(html).contains("const maxAttachmentSizeInBytes = 10485760;")
+    }
+
     private fun render(
         formIoForm: String = "{}",
         publicTaskUrl: String = "https://valtimo.example.org/api/v1/public-task/$PUBLIC_TASK_ID",
+        publicTaskAttachmentUrl: String = "$publicTaskUrl/attachment",
+        maxAttachmentSizeInBytes: Long = 10_485_760,
     ): String =
         htmlRenderService.generatePublicTaskHtml(
             fileName = "public_task_html",
@@ -100,6 +190,8 @@ internal class PublicTaskHtmlTemplateTest : BaseTest() {
                 mapOf(
                     "form_io_form" to formIoForm,
                     "public_task_url" to publicTaskUrl,
+                    "public_task_attachment_url" to publicTaskAttachmentUrl,
+                    "max_attachment_size_in_bytes" to maxAttachmentSizeInBytes,
                 ),
         )
 

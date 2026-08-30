@@ -8,6 +8,7 @@ dependencies {
 
     implementation("com.ritense.valtimo:valtimo-dependencies:$valtimoVersion")
     implementation("com.ritense.valtimo:local-mail:$valtimoVersion")
+    implementation("com.ritense.valtimo:s3-resource:$valtimoVersion")
 
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.postgresql:postgresql")

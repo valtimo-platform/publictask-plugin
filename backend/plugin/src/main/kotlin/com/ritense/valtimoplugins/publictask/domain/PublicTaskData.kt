@@ -26,6 +26,8 @@ data class PublicTaskData(
     val assigneeCandidateContactData: String,
     val taskExpirationDate: String,
     var isCompletedByPublicTask: Boolean,
+    val attachmentLimits: PublicTaskAttachmentLimits,
+    val documentMetadata: PublicTaskDocumentMetadata,
 ) {
     companion object {
         fun from(
@@ -33,6 +35,8 @@ data class PublicTaskData(
             processBusinessKey: String,
             assigneeCandidateContactData: String,
             timeToLive: String?,
+            attachmentLimits: PublicTaskAttachmentLimits,
+            documentMetadata: PublicTaskDocumentMetadata,
         ): PublicTaskData =
             PublicTaskData(
                 publicTaskId = UUID.randomUUID(),
@@ -41,6 +45,8 @@ data class PublicTaskData(
                 assigneeCandidateContactData = assigneeCandidateContactData,
                 taskExpirationDate = LocalDate.now().plusDays(timeToLive?.toLong() ?: 28L).toString(),
                 isCompletedByPublicTask = false,
+                attachmentLimits = attachmentLimits,
+                documentMetadata = documentMetadata,
             )
     }
 }
