@@ -1,22 +1,29 @@
 {
-  "display" : "form",
-  "components" : [
-    {
-      "key" : "naam",
-      "type" : "textfield",
-      "input" : true,
-      "label" : "Naam",
-      "validate" : {
-        "required" : true
-      }
-    },
-    {
-      "key" : "submit",
-      "type" : "button",
-      "input" : true,
-      "label" : "Submit",
-      "tableView" : false,
-      "disableOnInvalid" : true
-    }
-  ]
+    "display": "form",
+    "components": [
+        {
+            "key": "naam",
+            "type": "textfield",
+            "input": true,
+            "label": "Naam",
+            "validate": {
+                "required": true
+            }
+        },
+        {
+            "key": "bijlagen",
+            "type": "valtimo-file",
+            "input": true,
+            "label": "Bijlagen",
+            "multiple": true
+        },
+        {
+            "key": "submit",
+            "type": "button",
+            "input": true,
+            "label": "Submit",
+            "tableView": false,
+            "disableOnInvalid": true
+        }
+    ]
 }

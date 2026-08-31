@@ -38,4 +38,24 @@ data class PublicTaskEntity(
     val taskExpirationDate: String = "",
     @field:Column(name = "is_completed_by_public_task")
     val isCompletedByPublicTask: Boolean = false,
-)
+    @field:Column(name = "attachment_count")
+    val attachmentCount: Int = 0,
+    @field:Column(name = "max_attachments")
+    val maxAttachments: Int = PublicTaskAttachmentLimits.DEFAULT_MAX_ATTACHMENTS,
+    @field:Column(name = "max_attachment_size_in_bytes")
+    val maxAttachmentSizeInBytes: Long = PublicTaskAttachmentLimits.DEFAULT_MAX_SIZE_IN_BYTES,
+    @field:Column(name = "accepted_mime_types")
+    val acceptedMimeTypes: String = "",
+    // JSON, because the values are free text a delimiter would not survive.
+    @field:Column(name = "document_metadata")
+    val documentMetadataJson: String = "",
+) {
+    fun attachmentLimits(): PublicTaskAttachmentLimits =
+        PublicTaskAttachmentLimits(
+            maxAttachments = maxAttachments,
+            maxSizeInBytes = maxAttachmentSizeInBytes,
+            acceptedMimeTypes = PublicTaskAttachmentLimits.parseMimeTypes(acceptedMimeTypes),
+        )
+
+    fun documentMetadata(): PublicTaskDocumentMetadata = PublicTaskDocumentMetadata.fromJson(documentMetadataJson)
+}

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+val apacheTikaVersion: String by project
 val kotlinLoggingVersion: String by project
 val mockitoKotlinVersion: String by project
 
@@ -35,6 +36,7 @@ dependencies {
     compileOnly("com.ritense.valtimo:form")
     compileOnly("com.ritense.valtimo:plugin-valtimo")
     compileOnly("com.ritense.valtimo:process-document")
+    compileOnly("com.ritense.valtimo:temporary-resource-storage")
     compileOnly("com.ritense.valtimo:value-resolver")
 
     compileOnly("org.springframework.boot:spring-boot-starter-webflux")
@@ -42,6 +44,7 @@ dependencies {
     compileOnly("org.springframework.boot:spring-boot-starter-web")
     compileOnly("org.springframework.boot:spring-boot-starter-security")
     compileOnly("org.springframework.boot:spring-boot-starter-data-jpa")
+    compileOnly("org.apache.tika:tika-core:$apacheTikaVersion")
 
     compileOnly("io.github.oshai:kotlin-logging-jvm:$kotlinLoggingVersion")
     compileOnly("com.fasterxml.jackson.core:jackson-databind")
@@ -58,6 +61,7 @@ dependencies {
     testImplementation("com.ritense.valtimo:plugin")
     testImplementation("com.ritense.valtimo:temporary-resource-storage")
     testImplementation("com.ritense.valtimo:test-utils-common")
+    testImplementation("com.ritense.valtimo:value-resolver")
 
     testImplementation("org.springframework.boot:spring-boot-starter-data-jpa")
     testImplementation("org.springframework.boot:spring-boot-starter-test")

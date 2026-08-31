@@ -54,6 +54,15 @@ services:
     volumes:
       - plugin-database-data:/var/lib/postgres # persist data even if container shuts down
 
+  plugin-localstack:
+    image: localstack/localstack:3.7
+    container_name: plugin-docker-compose-plugin-localstack
+    ports:
+      - "4566:4566"
+    environment:
+      SERVICES: s3
+      AWS_DEFAULT_REGION: eu-west-1
+
   plugin-rabbitmq:
     image: rabbitmq:4.1.0-management
     container_name: plugin-docker-compose-plugin-rabbitmq

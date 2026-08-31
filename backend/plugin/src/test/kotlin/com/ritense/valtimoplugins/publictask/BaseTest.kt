@@ -16,4 +16,13 @@
 
 package com.ritense.valtimoplugins.publictask
 
-abstract class BaseTest
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
+
+abstract class BaseTest {
+    protected val objectMapper: ObjectMapper = ObjectMapper()
+
+    /** A form definition holding [components], each the JSON of one Form.io component. */
+    protected fun formWith(vararg components: String): JsonNode =
+        objectMapper.readTree("""{"display": "form", "components": [${components.joinToString(",")}]}""")
+}
