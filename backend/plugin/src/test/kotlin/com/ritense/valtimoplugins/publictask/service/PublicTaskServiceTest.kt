@@ -29,15 +29,19 @@ import com.ritense.valtimo.contract.upload.MimeTypeDeniedException
 import com.ritense.valtimo.contract.upload.VirusDetectedException
 import com.ritense.valtimoplugins.publictask.BaseTest
 import com.ritense.valtimoplugins.publictask.domain.PublicTaskAttachment
+import com.ritense.valtimoplugins.publictask.domain.PublicTaskAttachmentLimits
+import com.ritense.valtimoplugins.publictask.domain.PublicTaskData
 import com.ritense.valtimoplugins.publictask.domain.PublicTaskDocumentMetadata
 import com.ritense.valtimoplugins.publictask.domain.PublicTaskEntity
 import com.ritense.valtimoplugins.publictask.htmlrenderer.service.HtmlRenderService
 import com.ritense.valtimoplugins.publictask.repository.PublicTaskRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.reset
@@ -45,6 +49,7 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import org.operaton.bpm.engine.RuntimeService
+import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.springframework.http.HttpStatus
 import org.springframework.mock.web.MockMultipartFile
 import java.time.LocalDate
@@ -58,20 +63,113 @@ internal class PublicTaskServiceTest : BaseTest() {
     private val htmlRenderService: HtmlRenderService = mock()
     private val defaultFormSubmissionService: DefaultFormSubmissionService = mock()
     private val temporaryResourceStorageService: TemporaryResourceStorageService = mock()
+    private val execution: DelegateExecution = mock()
 
     private val publicTaskService = publicTaskService()
 
-    private fun publicTaskService(containerMaxFileSizeInBytes: Long? = null) =
-        PublicTaskService(
-            publicTaskRepository = publicTaskRepository,
-            runtimeService = runtimeService,
-            processLinkActivityService = processLinkActivityService,
-            htmlRenderService = htmlRenderService,
-            defaultFormSubmissionService = defaultFormSubmissionService,
-            temporaryResourceStorageService = temporaryResourceStorageService,
-            baseUrl = "https://valtimo.example.org",
-            applicationMaxFileSizeInBytes = containerMaxFileSizeInBytes,
-        )
+    private fun publicTaskService(
+        containerMaxFileSizeInBytes: Long? = null,
+        fallbackBaseUrl: String? = "https://valtimo.example.org",
+    ) = PublicTaskService(
+        publicTaskRepository = publicTaskRepository,
+        runtimeService = runtimeService,
+        processLinkActivityService = processLinkActivityService,
+        htmlRenderService = htmlRenderService,
+        defaultFormSubmissionService = defaultFormSubmissionService,
+        temporaryResourceStorageService = temporaryResourceStorageService,
+        fallbackBaseUrl = fallbackBaseUrl,
+        applicationMaxFileSizeInBytes = containerMaxFileSizeInBytes,
+    )
+
+    @Test
+    fun `the link starts with the URL of the plugin configuration`() {
+        createPublicTaskUrl(configuredBaseUrl = "https://gemeente.example.org")
+
+        assertThat(createdUrl()).isEqualTo("https://gemeente.example.org$PUBLIC_TASK_PATH")
+    }
+
+    @Test
+    fun `a URL without a scheme is read as an https one`() {
+        createPublicTaskUrl(configuredBaseUrl = "gemeente.example.org")
+
+        assertThat(createdUrl()).isEqualTo("https://gemeente.example.org$PUBLIC_TASK_PATH")
+    }
+
+    @Test
+    fun `a trailing slash does not end up in the link twice`() {
+        createPublicTaskUrl(configuredBaseUrl = "https://gemeente.example.org/")
+
+        assertThat(createdUrl()).isEqualTo("https://gemeente.example.org$PUBLIC_TASK_PATH")
+    }
+
+    @Test
+    fun `a plugin configuration without a URL of its own falls back to the application setting`() {
+        createPublicTaskUrl(configuredBaseUrl = null)
+
+        assertThat(createdUrl()).isEqualTo("https://valtimo.example.org$PUBLIC_TASK_PATH")
+    }
+
+    @Test
+    fun `a link cannot be created when neither the plugin nor the application says where this environment is`() {
+        val service = publicTaskService(fallbackBaseUrl = null)
+
+        val thrown =
+            assertThrows<IllegalStateException> {
+                service.createAndSendPublicTaskUrl(execution, publicTaskData(), null)
+            }
+
+        assertThat(thrown).hasMessageContaining("Public Task plugin configuration")
+        verify(publicTaskRepository, never()).save(any())
+    }
+
+    @Test
+    fun `a URL that is not a web address is refused rather than sent out`() {
+        assertThrows<IllegalArgumentException> {
+            publicTaskService.createAndSendPublicTaskUrl(execution, publicTaskData(), "javascript://alert(1)")
+        }
+
+        verify(publicTaskRepository, never()).save(any())
+    }
+
+    @Test
+    fun `the URL the link was built with stays with the task`() {
+        createPublicTaskUrl(configuredBaseUrl = "https://gemeente.example.org")
+
+        assertThat(savedPublicTask().baseUrl).isEqualTo("https://gemeente.example.org")
+    }
+
+    @Test
+    fun `the form addresses the environment its own link was built with`() {
+        givenPublicTask(baseUrl = "https://gemeente.example.org")
+        givenAFormWithUploadField()
+
+        publicTaskService.createPublicTaskHtml(PUBLIC_TASK_ID)
+
+        assertThat(renderedVariables())
+            .containsEntry("public_task_url", "https://gemeente.example.org$PUBLIC_TASK_PATH")
+            .containsEntry("public_task_attachment_url", "https://gemeente.example.org$PUBLIC_TASK_PATH/attachment")
+    }
+
+    @Test
+    fun `a task from before the URL was kept with it falls back to the application setting`() {
+        givenPublicTask(baseUrl = "")
+        givenAFormWithUploadField()
+
+        publicTaskService.createPublicTaskHtml(PUBLIC_TASK_ID)
+
+        assertThat(renderedVariables())
+            .containsEntry("public_task_url", "https://valtimo.example.org$PUBLIC_TASK_PATH")
+    }
+
+    @Test
+    fun `a form with nothing to fall back on addresses the environment it was served from`() {
+        givenPublicTask(baseUrl = "")
+        givenAFormWithUploadField()
+
+        publicTaskService(fallbackBaseUrl = null).createPublicTaskHtml(PUBLIC_TASK_ID)
+
+        assertThat(renderedVariables()).containsEntry("public_task_url", PUBLIC_TASK_PATH)
+    }
 
     @Test
     fun `rendering the form is refused once the task has expired`() {
@@ -719,6 +817,41 @@ internal class PublicTaskServiceTest : BaseTest() {
         verifyNoInteractions(temporaryResourceStorageService)
     }
 
+    private fun createPublicTaskUrl(configuredBaseUrl: String?) {
+        publicTaskService.createAndSendPublicTaskUrl(execution, publicTaskData(), configuredBaseUrl)
+    }
+
+    private fun publicTaskData() =
+        PublicTaskData(
+            publicTaskId = PUBLIC_TASK_ID,
+            userTaskId = USER_TASK_ID,
+            processBusinessKey = BUSINESS_KEY,
+            assigneeCandidateContactData = "citizen@example.org",
+            taskExpirationDate = LocalDate.now().plusDays(1).toString(),
+            isCompletedByPublicTask = false,
+            attachmentLimits = PublicTaskAttachmentLimits.of(null, null, null),
+            documentMetadata = PublicTaskDocumentMetadata.of(null),
+        )
+
+    /** The link as the process receives it. */
+    private fun createdUrl(): String {
+        val captor = argumentCaptor<String>()
+        verify(execution).setVariable(eq("url"), captor.capture())
+        return captor.lastValue
+    }
+
+    private fun savedPublicTask(): PublicTaskEntity {
+        val captor = argumentCaptor<PublicTaskEntity>()
+        verify(publicTaskRepository).save(captor.capture())
+        return captor.lastValue
+    }
+
+    private fun renderedVariables(): Map<String, Any> {
+        val captor = argumentCaptor<Map<String, Any>>()
+        verify(htmlRenderService).generatePublicTaskHtml(any(), captor.capture())
+        return captor.lastValue
+    }
+
     private fun submissionWith(resourceId: String) =
         JsonNodeFactory.instance.objectNode().apply {
             putArray("bijlagen").addObject().putObject("data").put("resourceId", resourceId)
@@ -806,6 +939,7 @@ internal class PublicTaskServiceTest : BaseTest() {
         acceptedMimeTypes: String = "",
         documentMetadata: Map<String, String> = emptyMap(),
         documentMetadataJson: String = PublicTaskDocumentMetadata.of(documentMetadata).toJson(),
+        baseUrl: String = "",
     ) {
         whenever(publicTaskRepository.findById(PUBLIC_TASK_ID)).thenReturn(
             Optional.of(
@@ -820,6 +954,7 @@ internal class PublicTaskServiceTest : BaseTest() {
                     maxAttachmentSizeInBytes = maxAttachmentSizeInBytes,
                     acceptedMimeTypes = acceptedMimeTypes,
                     documentMetadataJson = documentMetadataJson,
+                    baseUrl = baseUrl,
                 ),
             ),
         )
@@ -827,6 +962,8 @@ internal class PublicTaskServiceTest : BaseTest() {
 
     companion object {
         private val PUBLIC_TASK_ID = UUID.fromString("3f2a1c4e-0b7d-4a19-9c5e-8d6f0a1b2c3d")
+
+        private const val PUBLIC_TASK_PATH = "/api/v1/public-task/3f2a1c4e-0b7d-4a19-9c5e-8d6f0a1b2c3d"
 
         private val USER_TASK_ID = UUID.fromString("a0d1f5c2-1e3b-4a67-8c9d-0e1f2a3b4c5d")
 

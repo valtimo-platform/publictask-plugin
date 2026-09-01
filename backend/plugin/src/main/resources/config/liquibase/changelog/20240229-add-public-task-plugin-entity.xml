@@ -81,4 +81,13 @@
         </addColumn>
     </changeSet>
 
+    <!-- The address the link of this task was built with. Older tasks fall back to the application setting. -->
+    <changeSet id="6" author="Ritense">
+        <addColumn tableName="public_task_plugin_entity">
+            <column name="base_url" type="VARCHAR(512)" defaultValue="">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

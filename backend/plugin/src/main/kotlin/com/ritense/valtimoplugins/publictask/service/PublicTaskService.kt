@@ -30,6 +30,7 @@ import com.ritense.valtimo.contract.upload.VirusDetectedException
 import com.ritense.valtimoplugins.publictask.domain.PublicTaskAttachment
 import com.ritense.valtimoplugins.publictask.domain.PublicTaskAttachmentData
 import com.ritense.valtimoplugins.publictask.domain.PublicTaskAttachmentLimits
+import com.ritense.valtimoplugins.publictask.domain.PublicTaskBaseUrl
 import com.ritense.valtimoplugins.publictask.domain.PublicTaskData
 import com.ritense.valtimoplugins.publictask.domain.PublicTaskEntity
 import com.ritense.valtimoplugins.publictask.htmlrenderer.service.HtmlRenderService
@@ -54,7 +55,7 @@ class PublicTaskService(
     private val htmlRenderService: HtmlRenderService,
     private val defaultFormSubmissionService: DefaultFormSubmissionService,
     private val temporaryResourceStorageService: TemporaryResourceStorageService,
-    private val baseUrl: String,
+    private val fallbackBaseUrl: String?,
     // 'spring.servlet.multipart.max-file-size': the ceiling on every size limit here. Positive, or absent.
     private val applicationMaxFileSizeInBytes: Long?,
 ) {
@@ -70,17 +71,29 @@ class PublicTaskService(
             .correlateAll()
     }
 
+    /** [configuredBaseUrl] is what the plugin configuration holds; empty means the application setting. */
     fun createAndSendPublicTaskUrl(
         execution: DelegateExecution,
         publicTaskData: PublicTaskData,
+        configuredBaseUrl: String? = null,
     ) {
-        val publicTaskUrl = publicTaskUrl(publicTaskData.publicTaskId)
+        val baseUrl = baseUrlFor(configuredBaseUrl)
+        val publicTaskUrl = publicTaskUrl(baseUrl, publicTaskData.publicTaskId)
 
         execution.setVariable("assigneeCandidateContactData", publicTaskData.assigneeCandidateContactData)
         execution.setVariable("url", publicTaskUrl)
 
-        savePublicTaskEntity(publicTaskData)
+        savePublicTaskEntity(publicTaskData, baseUrl)
     }
+
+    /** The address this link starts with; raised here rather than kept from starting up. */
+    private fun baseUrlFor(configuredBaseUrl: String?): String =
+        PublicTaskBaseUrl.of(configuredBaseUrl)
+            ?: fallbackBaseUrl
+            ?: error(
+                "The public task URL has no address to start with. Fill in the URL of this environment in the " +
+                    "Public Task plugin configuration, or set 'valtimo.url' or 'valtimo.app.hostname'.",
+            )
 
     fun createPublicTaskHtml(publicTaskId: UUID): ResponseEntity<String> {
         val publicTaskEntity = findAvailablePublicTask(publicTaskId) ?: return TASK_NOT_AVAILABLE_ERROR
@@ -93,13 +106,16 @@ class PublicTaskService(
                         processLinkActivityService.openTask(userTaskId).properties as FormTaskOpenResultProperties
                     }
                 val form = PublicTaskFormRewriter.rewriteUploadComponents(operatonTaskData.prefilledForm)
+                // The address the link was built with; empty leaves the page calling back to its own path.
+                val baseUrl = publicTaskEntity.baseUrl.ifBlank { fallbackBaseUrl.orEmpty() }
                 htmlRenderService.generatePublicTaskHtml(
                     fileName = PUBLIC_TASK_FILE_NAME,
                     variables =
                         mapOf(
                             "form_io_form" to form.toPrettyString(),
-                            "public_task_url" to publicTaskUrl(publicTaskId),
-                            "public_task_attachment_url" to publicTaskUrl(publicTaskId, ATTACHMENT_PATH_SEGMENT),
+                            "public_task_url" to publicTaskUrl(baseUrl, publicTaskId),
+                            "public_task_attachment_url" to
+                                publicTaskUrl(baseUrl, publicTaskId, ATTACHMENT_PATH_SEGMENT),
                             "max_attachment_size_in_bytes" to maxAttachmentSizeFor(publicTaskEntity.attachmentLimits()),
                         ),
                 )
@@ -441,6 +457,7 @@ class PublicTaskService(
     }
 
     private fun publicTaskUrl(
+        baseUrl: String,
         publicTaskId: UUID,
         vararg pathSegments: String,
     ): String =
@@ -494,7 +511,10 @@ class PublicTaskService(
             }
         }
 
-    private fun savePublicTaskEntity(publicTaskData: PublicTaskData) {
+    private fun savePublicTaskEntity(
+        publicTaskData: PublicTaskData,
+        baseUrl: String,
+    ) {
         val limits = publicTaskData.attachmentLimits
         warnWhenTheContainerAllowsLess(limits.maxSizeInBytes)
         publicTaskRepository
@@ -510,6 +530,7 @@ class PublicTaskService(
                     maxAttachmentSizeInBytes = limits.maxSizeInBytes,
                     acceptedMimeTypes = limits.acceptedMimeTypes.joinToString(","),
                     documentMetadataJson = publicTaskData.documentMetadata.toJson(),
+                    baseUrl = baseUrl,
                 ),
             ).also {
                 // Not the public task id: it grants access to the form, so it stays out of logs.

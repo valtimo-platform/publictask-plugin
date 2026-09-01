@@ -31,13 +31,12 @@ one.
 
 ## Public task URL
 
-The base of the URL sent to the assignee candidate is resolved from application configuration, in this
-order:
+The base of the URL sent to the assignee candidate is resolved when a link is created, in this order:
 
-1. `valtimo.url` — a full URL including scheme. Used when set.
-2. `valtimo.app.hostname` — a hostname without scheme. Used when `valtimo.url` is not set; the scheme
-   comes from `valtimo.app.scheme`, which defaults to `https`.
-3. When neither is configured, the plugin fails to start with a clear error.
+1. **URL of this environment** on the plugin configuration. See [plugin.md](plugin.md).
+2. `valtimo.url` — a full URL including scheme.
+3. `valtimo.app.hostname` — a hostname without scheme; the scheme comes from `valtimo.app.scheme`, which
+   defaults to `https`.
 
 | Property               | Environment variable   | Example                      |
 |------------------------|------------------------|------------------------------|
@@ -47,6 +46,19 @@ order:
 
 Existing setups based on `VALTIMO_URL` are unchanged; deployments that only configure
 `VALTIMO_APP_HOSTNAME`, such as Ritense Cloud applications, generate the URL correctly.
+
+An environment that configures none of the three starts up normally. Creating a link then fails with a
+message naming the plugin field, because whether a public task URL can be produced is a property of the
+plugin configuration doing it, not of the application — an environment that never creates one has nothing
+to configure.
+
+A value without a scheme is read as an `https` address, a trailing `/` is dropped, and anything that is
+not an `http` or `https` address is refused: the value ends up in a browser and in whatever sends the
+link out.
+
+The base is stored with the public task, so the page a link opens keeps addressing the environment the
+applicant reached. A public task created before this was kept falls back to the application setting, and
+to a path of its own when there is none — the page only ever calls back to itself.
 
 The public task id is a path segment: `<base>/api/v1/public-task/<publicTaskId>`. Older links carrying
 the id as a `publicTaskId` query parameter are still accepted so that URLs already sent out keep working,

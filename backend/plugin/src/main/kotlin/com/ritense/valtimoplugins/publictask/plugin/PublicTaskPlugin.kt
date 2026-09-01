@@ -19,6 +19,7 @@ package com.ritense.valtimoplugins.publictask.plugin
 import com.ritense.plugin.annotation.Plugin
 import com.ritense.plugin.annotation.PluginAction
 import com.ritense.plugin.annotation.PluginActionProperty
+import com.ritense.plugin.annotation.PluginProperty
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.valtimoplugins.publictask.domain.PublicTaskAttachmentLimits
 import com.ritense.valtimoplugins.publictask.domain.PublicTaskData
@@ -38,6 +39,9 @@ class PublicTaskPlugin(
     private val publicTaskService: PublicTaskService,
     private val valueResolverService: ValueResolverService,
 ) {
+    @PluginProperty(key = "baseUrl", secret = false, required = false)
+    private var baseUrl: String? = null
+
     /** Creates a public task and hands its URL to the process. The attachment limits bound its upload endpoint. */
     @PluginAction(
         key = "create-public-task",
@@ -72,6 +76,7 @@ class PublicTaskPlugin(
         publicTaskService.createAndSendPublicTaskUrl(
             execution = execution,
             publicTaskData = publicTaskData,
+            configuredBaseUrl = baseUrl,
         )
     }
 

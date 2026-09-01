@@ -19,7 +19,22 @@ information can be found [here](/introduction/modules/plugin-introduction.md#plu
 A plugin configuration is required before the plugin can be used. A general description on how to
 configure plugins can be found [here](../configure-plugin.md).
 
-This plugin has no specific configuration properties besides the plugin title.
+Besides the plugin title there is one field:
+
+- **URL of this environment** — what every link this configuration produces starts with: the address the
+  person receiving the link reaches this environment at, for example `https://my-app.example.com`. Write
+  it with `https://` in front of it; without a scheme it is read as an `https` address.
+
+The field may be left empty. It then falls back to the address the environment is configured with
+(`VALTIMO_URL`, or `VALTIMO_APP_HOSTNAME`), which is how existing configurations keep working. If neither
+is set anywhere, creating a link fails with a message saying so — fill in this field to fix it.
+
+Fill it in when the address in the link has to be a different one from what the environment says about
+itself: an environment reachable under its own domain name, or one where the address applicants use is
+not the one Valtimo is configured with.
+
+Only *new* links start with a changed URL; links you have already sent out keep working and keep pointing
+at the address they were created with.
 
 An example plugin configuration:
 
