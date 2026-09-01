@@ -25,6 +25,7 @@ import org.assertj.core.api.Assertions.entry
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
@@ -137,7 +138,7 @@ internal class PublicTaskPluginTest : BaseTest() {
 
     private fun savedMetadata(): Map<String, String> {
         val captor = argumentCaptor<PublicTaskData>()
-        verify(publicTaskService).createAndSendPublicTaskUrl(any(), captor.capture())
+        verify(publicTaskService).createAndSendPublicTaskUrl(any(), captor.capture(), anyOrNull())
         return captor.firstValue.documentMetadata.fields
     }
 

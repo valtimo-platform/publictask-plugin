@@ -23,6 +23,7 @@ import com.ritense.resource.service.TemporaryResourceStorageService
 import com.ritense.valtimo.contract.annotation.ProcessBean
 import com.ritense.valtimo.contract.upload.ValtimoUploadProperties
 import com.ritense.valtimoplugins.publictask.config.PublicTaskSecurityConfigurer
+import com.ritense.valtimoplugins.publictask.domain.PublicTaskBaseUrl
 import com.ritense.valtimoplugins.publictask.htmlrenderer.config.FreemarkerConfig
 import com.ritense.valtimoplugins.publictask.htmlrenderer.service.HtmlRenderService
 import com.ritense.valtimoplugins.publictask.plugin.PublicTaskPluginFactory
@@ -70,16 +71,6 @@ class PublicTaskAutoConfiguration {
         @Value("\${valtimo.app.hostname:}") hostname: String,
         @Value("\${valtimo.url:}") valtimoUrl: String,
     ): PublicTaskService {
-        val baseUrl =
-            when {
-                valtimoUrl.isNotBlank() -> valtimoUrl
-                // Only prepend the scheme when the hostname does not already carry one.
-                hostname.isNotBlank() -> if (hostname.contains("://")) hostname else "$scheme://$hostname"
-                else ->
-                    error(
-                        "Neither 'valtimo.url' nor 'valtimo.app.hostname' is configured for the public task URL",
-                    )
-            }
         warnWhenAnyFileTypeIsAccepted(uploadProperties)
         return PublicTaskService(
             publicTaskRepository = publicTaskRepository,
@@ -88,10 +79,25 @@ class PublicTaskAutoConfiguration {
             htmlRenderService = htmlRenderService,
             defaultFormSubmissionService = defaultFormSubmissionService,
             temporaryResourceStorageService = temporaryResourceStorageService,
-            baseUrl = baseUrl,
+            fallbackBaseUrl = fallbackBaseUrl(valtimoUrl, hostname, scheme),
             applicationMaxFileSizeInBytes = getSpringServletMultipartMaxFileSize(multipartProperties),
         )
     }
+
+    private fun fallbackBaseUrl(
+        valtimoUrl: String,
+        hostname: String,
+        scheme: String,
+    ): String? =
+        try {
+            PublicTaskBaseUrl.of(valtimoUrl, scheme) ?: PublicTaskBaseUrl.of(hostname, scheme)
+        } catch (e: IllegalArgumentException) {
+            logger.warn(e) {
+                "Public task URLs cannot start with what 'valtimo.url' or 'valtimo.app.hostname' holds. Fill in " +
+                    "the URL of this environment in the Public Task plugin configuration instead."
+            }
+            null
+        }
 
     /** `spring.servlet.multipart.max-file-size` */
     private fun getSpringServletMultipartMaxFileSize(multipartProperties: ObjectProvider<MultipartProperties>): Long? =

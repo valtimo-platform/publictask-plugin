@@ -2,6 +2,11 @@
 
 Overzicht van wijzigingen per versie van de Publictask-plugin.
 
+## 2.3.0
+
+De URL van de omgeving kan nu in de pluginconfiguratie worden ingevuld. Is die leeg, dan blijft de instelling van de
+omgeving zelf (`VALTIMO_URL` of `VALTIMO_APP_HOSTNAME`) gelden.
+
 ## 2.2.0
 Uploadvelden werken nu in het publieke formulier. Bijlagen die iemand daar meestuurt, komen op dezelfde manier in de zaak terecht als bij een taak binnen GZAC.
 

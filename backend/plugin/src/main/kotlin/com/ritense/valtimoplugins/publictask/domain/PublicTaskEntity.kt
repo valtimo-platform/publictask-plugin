@@ -49,6 +49,8 @@ data class PublicTaskEntity(
     // JSON, because the values are free text a delimiter would not survive.
     @field:Column(name = "document_metadata")
     val documentMetadataJson: String = "",
+    @field:Column(name = "base_url")
+    val baseUrl: String = "",
 ) {
     fun attachmentLimits(): PublicTaskAttachmentLimits =
         PublicTaskAttachmentLimits(
