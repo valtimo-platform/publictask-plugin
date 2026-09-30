@@ -2,6 +2,10 @@
 
 Overzicht van wijzigingen per versie van de Publictask-plugin.
 
+## 2.3.1
+
+Ondersteuning voor Valtimo 13.48.0.
+
 ## 2.3.0
 
 De URL van de omgeving kan nu in de pluginconfiguratie worden ingevuld. Is die leeg, dan blijft de instelling van de
