@@ -2,6 +2,12 @@
 
 Overzicht van wijzigingen per versie van de Publictask-plugin.
 
+## 2.3.2
+
+Heeft zowel een bouwblok als een zaakdefinitie een eigen proces om de URL van de publieke taak aan te maken, dan
+wordt nu het proces van het eigen bouwblok of de eigen zaakdefinitie gestart, en niet meer het proces dat het laatst is
+uitgerold.
+
 ## 2.3.1
 
 Ondersteuning voor Valtimo 13.48.0.

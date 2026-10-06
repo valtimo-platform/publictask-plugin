@@ -25,6 +25,8 @@ import com.ritense.processlink.exception.ProcessLinkNotFoundException
 import com.ritense.processlink.service.ProcessLinkActivityService
 import com.ritense.resource.domain.MetadataType
 import com.ritense.resource.service.TemporaryResourceStorageService
+import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX
+import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX
 import com.ritense.valtimo.contract.upload.MimeTypeDeniedException
 import com.ritense.valtimo.contract.upload.VirusDetectedException
 import com.ritense.valtimoplugins.publictask.domain.PublicTaskAttachment
@@ -40,6 +42,11 @@ import org.apache.tika.Tika
 import org.operaton.bpm.engine.RuntimeService
 import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.operaton.bpm.engine.delegate.DelegateTask
+import org.operaton.bpm.engine.repository.ProcessDefinition
+import org.operaton.bpm.model.bpmn.BpmnModelInstance
+import org.operaton.bpm.model.bpmn.instance.MessageEventDefinition
+import org.operaton.bpm.model.bpmn.instance.Process
+import org.operaton.bpm.model.bpmn.instance.StartEvent
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.multipart.MultipartFile
@@ -62,14 +69,70 @@ class PublicTaskService(
     // Built once: constructing a Tika scans the classpath for every parser and detector it can find.
     private val tika = Tika()
 
+    /** Starts the URL process of the task's own case definition or building block, when it has one. */
     fun startNotifyAssigneeCandidateProcess(task: DelegateTask) {
+        val urlProcessDefinitions = urlProcessDefinitionsBeside(task)
+        if (urlProcessDefinitions.isEmpty()) {
+            notifyAssigneeMessage(task).processInstanceId(task.processInstanceId).correlateAll()
+            return
+        }
+
+        runtimeService
+            .createExecutionQuery()
+            .processInstanceId(task.processInstanceId)
+            .messageEventSubscriptionName(NOTIFY_ASSIGNEE_PROCESS_MESSAGE_NAME)
+            .list()
+            .forEach {
+                runtimeService.messageEventReceived(
+                    NOTIFY_ASSIGNEE_PROCESS_MESSAGE_NAME,
+                    it.id,
+                    variables(task),
+                )
+            }
+        urlProcessDefinitions.forEach { processDefinition ->
+            notifyAssigneeMessage(task)
+                .processDefinitionId(processDefinition.id)
+                .startMessageOnly()
+                .correlateWithResult()
+        }
+    }
+
+    private fun notifyAssigneeMessage(task: DelegateTask) =
         runtimeService
             .createMessageCorrelation(NOTIFY_ASSIGNEE_PROCESS_MESSAGE_NAME)
-            .processInstanceId(task.processInstanceId)
-            .setVariables(mapOf("userTaskId" to task.id))
+            .setVariables(variables(task))
             .processInstanceBusinessKey(task.execution.processBusinessKey)
-            .correlateAll()
+
+    private fun variables(task: DelegateTask) = mapOf("userTaskId" to task.id)
+
+    // Operaton holds one start subscription per message: by name alone, the last deployed copy would start.
+    private fun urlProcessDefinitionsBeside(task: DelegateTask): List<ProcessDefinition> {
+        val repositoryService = task.processEngineServices.repositoryService
+        val versionTag =
+            repositoryService
+                .getProcessDefinition(task.processDefinitionId)
+                .versionTag
+                ?.removePrefix(DETACHED_VERSION_TAG_PREFIX)
+                ?.takeIf { tag -> BLUEPRINT_VERSION_TAG_PREFIXES.any { tag.startsWith(it) } }
+                ?: return emptyList()
+
+        return repositoryService
+            .createProcessDefinitionQuery()
+            .versionTag(versionTag)
+            .active()
+            .list()
+            .groupBy { it.key }
+            .values
+            .map { versions -> versions.maxBy { it.version } }
+            .filter { startsOnNotifyAssigneeMessage(repositoryService.getBpmnModelInstance(it.id)) }
     }
+
+    private fun startsOnNotifyAssigneeMessage(model: BpmnModelInstance): Boolean =
+        model
+            .getModelElementsByType(StartEvent::class.java)
+            .filter { it.parentElement is Process }
+            .flatMap { it.eventDefinitions }
+            .any { it is MessageEventDefinition && it.message?.name == NOTIFY_ASSIGNEE_PROCESS_MESSAGE_NAME }
 
     /** [configuredBaseUrl] is what the plugin configuration holds; empty means the application setting. */
     fun createAndSendPublicTaskUrl(
@@ -565,6 +628,13 @@ class PublicTaskService(
         const val ATTACHMENT_PATH_SEGMENT = "attachment"
 
         private const val NOTIFY_ASSIGNEE_PROCESS_MESSAGE_NAME = "startNotifyAssigneeMessage"
+
+        // How Valtimo tags the processes of a case definition and of a building block.
+        private val BLUEPRINT_VERSION_TAG_PREFIXES =
+            listOf(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX, OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX)
+
+        // Valtimo's tag for the earlier copy of a redeployed process; the rest of its blueprint keeps the plain tag.
+        private const val DETACHED_VERSION_TAG_PREFIX = "DETACHED:"
 
         private const val PUBLIC_TASK_FILE_NAME = "public_task_html"
 
