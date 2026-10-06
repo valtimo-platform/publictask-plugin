@@ -20,6 +20,11 @@ and that has to be the form, so the public task is created from a subprocess ins
 
    ![example create url process](img/create-url-process.png)
 
+   The subprocess is started from the same case definition or building block as the user task, so a
+   case definition and a building block can each ship their own copy without the one starting the other.
+   A user task outside any case definition or building block, or one whose own case definition or
+   building block has no such subprocess, starts the most recently deployed copy instead.
+
 3. Link the process link to the **Create Public Task URL** task.
 4. Implement a notification function to send the URL to the assignee candidate.
 
